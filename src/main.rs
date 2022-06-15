@@ -13,6 +13,7 @@ fn pcnext(pc: String) -> String {
     n += 1;
     let mut name: String = String::from(v[0]);
     let num: String = n.to_string();
+    name.push('^');
     name.push_str(&num);
     name
 }
@@ -87,8 +88,35 @@ fn exec(mut vm: Tsvm) -> Tsvm {
     vm
 }
 
+fn execmain(mut vm: Tsvm) -> Tsvm {
+    vm.isrunning = true;
+    vm.pc = String::from(&vm.mem["start"]);
+
+    while vm.isrunning {
+        vm = exec(vm);
+        vm.pc = pcnext(vm.pc);
+    }
+
+    vm
+}
+
+fn tsvminit() -> Tsvm {
+    Tsvm { 
+            isrunning: false, 
+            acc: String::from(""),
+            pc: String::from(""), 
+            mem: HashMap::new() 
+        }
+}
+
 fn main() {
     println!("Hello, world!");
-    let sas: String = String::from("sas^12");
-    println!("{}", pcnext(sas));
+    
+    // programma di prova
+    let mut vm:Tsvm = tsvminit();
+    vm.mem.insert(String::from("start"), String::from("main^0"));
+    vm.mem.insert(String::from("main^0"), String::from("load^ciao"));
+    vm.mem.insert(String::from("main^1"), String::from("output"));
+    vm.mem.insert(String::from("main^2"), String::from("stop"));
+    execmain(vm);
 }
