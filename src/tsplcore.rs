@@ -17,7 +17,7 @@ pub fn tsvminit() -> Tsvm {
 }
 
 fn pcnext(pc: String) -> String {
-    let v: Vec<&str> = pc.split('^').collect();
+    let v: Vec<&str> = pc.splitn(2, '^').collect();
     let mut n: i32 = v[1].parse().unwrap();
     n += 1;
     let mut name: String = String::from(v[0]);
@@ -28,10 +28,10 @@ fn pcnext(pc: String) -> String {
 }
 
 fn exec(vm: &mut Tsvm) {
-    let instruction: String = vm.mem[&vm.pc].clone();
+    let instruction: String = vm.mem.get(&vm.pc).expect("not found entry for pc").clone();
 
     //parse instruction
-    let instructionlist: Vec<&str> = instruction.split('^').collect();
+    let instructionlist: Vec<&str> = instruction.splitn(2, '^').collect();
     let command: &str = instructionlist[0];
 
     // memory
@@ -48,22 +48,22 @@ fn exec(vm: &mut Tsvm) {
     // logic
     else if command == "add" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = String::from(instructionlist[1]).parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
     } else if command == "sub" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = String::from(instructionlist[1]).parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
     } else if command == "and" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = String::from(instructionlist[1]).parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
     } else if command == "or" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = String::from(instructionlist[1]).parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
     } else if command == "not" {
@@ -75,7 +75,7 @@ fn exec(vm: &mut Tsvm) {
     else if command == "input" {
         std::io::stdin().read_line(&mut vm.acc).unwrap();
     } else if command == "output" {
-        print!("{}", vm.acc);
+        print!("{}", vm.acc.clone());
     }
     // jumps
     else if command == "jump" {

@@ -12,7 +12,7 @@ pub fn assemblyfromfile(filename: &str,vm: &mut Tsvm) {
         // Show the line and its number.
         // println!("{}. {}", index + 1, line);
         
-        let v: Vec<&str> = line.split("__").collect();
+        let v: Vec<&str> = line.splitn(2, "__").collect();
         if v.len() != 2 {
             panic!("token not recognised at line {}", index + 1);
         } else {

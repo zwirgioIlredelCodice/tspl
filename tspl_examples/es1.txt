@@ -1,4 +1,3 @@
 start__m^0
-m^0__load^bellino
-m^1__output
-m^2__stop
+m^0__load^1
+m^2__jump^m^0
