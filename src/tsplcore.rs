@@ -7,6 +7,15 @@ pub struct Tsvm {
     pub mem: HashMap<String, String>,
 }
 
+pub fn tsvminit() -> Tsvm {
+    Tsvm {
+        isrunning: false,
+        acc: String::from(""),
+        pc: String::from(""),
+        mem: HashMap::new(),
+    }
+}
+
 fn pcnext(pc: String) -> String {
     let v: Vec<&str> = pc.split('^').collect();
     let mut n: i32 = v[1].parse().unwrap();
@@ -18,7 +27,7 @@ fn pcnext(pc: String) -> String {
     name
 }
 
-fn exec(mut vm: Tsvm) -> Tsvm {
+fn exec(vm: &mut Tsvm) {
     let instruction: String = vm.mem[&vm.pc].clone();
 
     //parse instruction
@@ -82,7 +91,6 @@ fn exec(mut vm: Tsvm) -> Tsvm {
     } else {
         vm.isrunning = false;
     }
-    vm
 }
 
 pub fn execmain(mut vm: Tsvm) -> Tsvm {
@@ -90,18 +98,32 @@ pub fn execmain(mut vm: Tsvm) -> Tsvm {
     vm.pc = String::from(&vm.mem["start"]);
 
     while vm.isrunning {
-        vm = exec(vm);
+        exec(&mut vm);
         vm.pc = pcnext(vm.pc);
     }
 
     vm
 }
 
-pub fn tsvminit() -> Tsvm {
-    Tsvm {
-        isrunning: false,
-        acc: String::from(""),
-        pc: String::from(""),
-        mem: HashMap::new(),
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pcnext() {
+        assert_eq!(String::from("main^1"), pcnext(String::from("main^0")))
+    }
+    #[test]
+    #[should_panic]
+    fn test_notpcnext() {
+        _ = pcnext(String::from("main0"));
+    }
+    #[test]
+    fn test_tsvminit() {
+        let vm: Tsvm = tsvminit();
+        assert_eq!(vm.isrunning,  false);
+        assert_eq!(vm.acc, ""); 
+        assert_eq!(vm.pc, ""); 
+        assert_eq!(vm.mem, HashMap::new())
     }
 }
