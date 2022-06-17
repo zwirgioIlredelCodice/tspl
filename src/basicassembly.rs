@@ -1,22 +1,25 @@
+use std::collections::btree_map::Values;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 use crate::tsplcore::Tsvm;
 
-pub fn assemblyfromfile(filename: &str,vm: &mut Tsvm) {
+pub fn assemblyfromfile(filename: &str, vm: &mut Tsvm, debug: bool) {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
 
     for (index, line) in reader.lines().enumerate() {
         let line = line.unwrap();
-        // Show the line and its number.
-        // println!("{}. {}", index + 1, line);
-        
         let v: Vec<&str> = line.splitn(2, "__").collect();
-        if v.len() != 2 {
-            panic!("token not recognised at line {}", index + 1);
-        } else {
-            vm.mem.insert(String::from(v[0]), String::from(v[1]));
+
+        let key: String = String::from(v[0]);
+        let value: String = String::from(v[1]);
+
+        if debug {
+            println!("{}. {}", index + 1, line);
+            println!("key: {}, value: {}", key, value);
         }
+
+        vm.mem.insert(key, value);
     }
 }

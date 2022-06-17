@@ -16,66 +16,97 @@ pub fn tsvminit() -> Tsvm {
     }
 }
 
-fn pcnext(pc: String) -> String {
+fn pcnext(pc: &mut String) {
     let v: Vec<&str> = pc.splitn(2, '^').collect();
     let mut n: i32 = v[1].parse().unwrap();
     n += 1;
-    let mut name: String = String::from(v[0]);
+    let name: String = String::from(v[0]);
     let num: String = n.to_string();
-    name.push('^');
-    name.push_str(&num);
-    name
+    pc.clear();
+    pc.push_str(&name);
+    pc.push('^');
+    pc.push_str(&num);
 }
 
-fn exec(vm: &mut Tsvm) {
+fn exec(vm: &mut Tsvm, debug: bool) {
+
+    if debug {
+        println!("DB pc: {}", vm.pc);
+    }
     let instruction: String = vm.mem.get(&vm.pc).expect("not found entry for pc").clone();
 
     //parse instruction
     let instructionlist: Vec<&str> = instruction.splitn(2, '^').collect();
     let command: &str = instructionlist[0];
 
+    if debug {
+        println!("DB command {:?}", instructionlist);
+    }
     // memory
     if command == "load" {
         vm.acc = String::from(instructionlist[1]);
+        pcnext(&mut vm.pc);
     } else if command == "get" {
         vm.acc = String::from(&vm.mem[instructionlist[1]]);
+        pcnext(&mut vm.pc);
     } else if command == "set" {
         vm.mem
             .insert(String::from(instructionlist[1]), vm.acc.clone());
+            pcnext(&mut vm.pc);
     } else if command == "del" {
         vm.mem.remove(&vm.acc);
+        pcnext(&mut vm.pc);
     }
     // logic
     else if command == "add" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1])
+                            .expect("entry not found")
+                            .parse()
+                            .expect("not a number");
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
     } else if command == "sub" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1])
+                            .expect("entry not found")
+                            .parse()
+                            .expect("not a number");
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
     } else if command == "and" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1])
+                            .expect("entry not found")
+                            .parse()
+                            .expect("not a number");
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
     } else if command == "or" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1]).unwrap().parse().unwrap();
+        let n2: i32 = vm.mem.get(instructionlist[1])
+                            .expect("entry not found")
+                            .parse()
+                            .expect("not a number");();
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
     } else if command == "not" {
-        let n1: i32 = vm.acc.parse().unwrap();
+        let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = !n1;
         vm.acc = n2.to_string();
+        pcnext(&mut vm.pc);
     }
     // I/O
     else if command == "input" {
         std::io::stdin().read_line(&mut vm.acc).unwrap();
+        pcnext(&mut vm.pc);
     } else if command == "output" {
-        print!("{}", vm.acc.clone());
+        print!("{}", vm.acc);
+        pcnext(&mut vm.pc);
     }
     // jumps
     else if command == "jump" {
@@ -93,13 +124,12 @@ fn exec(vm: &mut Tsvm) {
     }
 }
 
-pub fn execmain(mut vm: Tsvm) -> Tsvm {
+pub fn execmain(mut vm: Tsvm, debug: bool) -> Tsvm {
     vm.isrunning = true;
     vm.pc = String::from(&vm.mem["start"]);
 
     while vm.isrunning {
-        exec(&mut vm);
-        vm.pc = pcnext(vm.pc);
+        exec(&mut vm, debug);
     }
 
     vm
@@ -111,12 +141,14 @@ mod tests {
 
     #[test]
     fn test_pcnext() {
-        assert_eq!(String::from("main^1"), pcnext(String::from("main^0")))
+        let mut s: String = String::from("main^0");
+        pcnext(&mut s);
+        assert_eq!(String::from("main^1"), s)
     }
     #[test]
     #[should_panic]
     fn test_notpcnext() {
-        _ = pcnext(String::from("main0"));
+        _ = pcnext(&mut String::from("main0"));
     }
     #[test]
     fn test_tsvminit() {

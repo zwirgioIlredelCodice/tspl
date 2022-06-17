@@ -1,3 +1,4 @@
 start__m^0
 m^0__load^1
-m^2__jump^m^0
+m^1__load^m^0
+m^2__jump
