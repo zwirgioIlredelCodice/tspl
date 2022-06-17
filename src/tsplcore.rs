@@ -58,7 +58,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     }
     // logic
     else if command == "add" {
-        let n1: i32 = vm.acc.parse().unwrap();
+        let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
@@ -69,7 +69,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "sub" {
-        let n1: i32 = vm.acc.parse().unwrap();
+        let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
@@ -80,7 +80,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "and" {
-        let n1: i32 = vm.acc.parse().unwrap();
+        let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
@@ -91,19 +91,23 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "or" {
-        let n1: i32 = vm.acc.parse().unwrap();
+        let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
             .expect("not a number");
-        ();
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "not" {
-        let n1: i32 = vm.acc.parse().unwrap();
+        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n2: i32 = !n1; // attenzione  ! = -(x + 1) -> !1 = -2 -> !0 = -1
+        vm.acc = n2.to_string();
+        pcnext(&mut vm.pc);
+    } else if command == "compare" {
+        let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
@@ -119,11 +123,6 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             n3 = -1;
         }
         vm.acc = n3.to_string();
-        pcnext(&mut vm.pc);
-    } else if command == "compare" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
-        let n2: i32 = !n1;
-        vm.acc = n2.to_string();
         pcnext(&mut vm.pc);
     }
     // I/O
@@ -155,7 +154,7 @@ pub fn execmain(mut vm: &mut Tsvm, debug: bool) {
     vm.pc = String::from(&vm.mem["start"]);
 
     while vm.isrunning {
-        exec(&mut vm, debug);
+        exec(vm, debug);
     }
 }
 
@@ -225,4 +224,108 @@ mod tests {
         exec(&mut vm, false);
         vm.mem.get("var").unwrap();
     }
+
+    // logic
+    #[test]
+    fn test_add() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        vm.mem.insert(String::from("var"), String::from("2"));
+        vm.mem.insert(String::from("m^0"), String::from("add^var"));
+        exec(&mut vm, false);
+        assert_eq!("3", vm.acc)
+    }
+
+    #[test]
+    fn test_sub() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        vm.mem.insert(String::from("var"), String::from("2"));
+        vm.mem.insert(String::from("m^0"), String::from("sub^var"));
+        exec(&mut vm, false);
+        assert_eq!("-1", vm.acc)
+    }
+
+    #[test]
+    fn test_and() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        vm.mem.insert(String::from("var"), String::from("1"));
+        vm.mem.insert(String::from("m^0"), String::from("and^var"));
+        exec(&mut vm, false);
+        assert_eq!("1", vm.acc); // 1 & 1
+
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("var"), String::from("0"));
+        exec(&mut vm, false);
+        assert_eq!("0", vm.acc); // 1 & 0
+
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("0");
+        vm.mem.insert(String::from("var"), String::from("0"));
+        exec(&mut vm, false);
+        assert_eq!("0", vm.acc) // 0 & 0
+    }
+
+    #[test]
+    fn test_or() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        vm.mem.insert(String::from("var"), String::from("1"));
+        vm.mem.insert(String::from("m^0"), String::from("or^var"));
+        exec(&mut vm, false);
+        assert_eq!("1", vm.acc); // 1 | 1
+
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("var"), String::from("0"));
+        exec(&mut vm, false);
+        assert_eq!("1", vm.acc); // 1 | 0
+
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("0");
+        vm.mem.insert(String::from("var"), String::from("0"));
+        exec(&mut vm, false);
+        assert_eq!("0", vm.acc) // 0 | 0
+    }
+
+    #[test]
+    fn test_not() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        vm.mem.insert(String::from("m^0"), String::from("not"));
+        exec(&mut vm, false);
+        assert_eq!("-2", vm.acc); // !1
+
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("0");
+        exec(&mut vm, false);
+        assert_eq!("-1", vm.acc) // !0
+    }
+
+    #[test]
+    fn test_compare() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        vm.mem.insert(String::from("var"), String::from("2"));
+        vm.mem.insert(String::from("m^0"), String::from("compare^var"));
+        exec(&mut vm, false);
+        assert_eq!("-1", vm.acc); // 1 > 2
+
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("3");
+        exec(&mut vm, false);
+        assert_eq!("1", vm.acc); //  3 > 2
+
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("2");
+        exec(&mut vm, false);
+        assert_eq!("0", vm.acc); // 2 == 2
+    }
+
 }
