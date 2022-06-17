@@ -1,5 +1,5 @@
-mod tsplcore;
 mod basicassembly;
+mod tsplcore;
 
 fn main() {
     println!("Hello, world!");
@@ -14,5 +14,5 @@ fn main() {
     // vm.mem.insert(String::from("main^2"), String::from("stop"));
     // tsplcore::execmain(vm);
     basicassembly::assemblyfromfile("tspl_examples/es1.txt", &mut vm, true);
-    tsplcore::execmain(vm, true);
+    tsplcore::execmain(&mut vm, true);
 }

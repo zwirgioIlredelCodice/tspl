@@ -29,7 +29,6 @@ fn pcnext(pc: &mut String) {
 }
 
 fn exec(vm: &mut Tsvm, debug: bool) {
-
     if debug {
         println!("DB pc: {}", vm.pc);
     }
@@ -52,7 +51,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     } else if command == "set" {
         vm.mem
             .insert(String::from(instructionlist[1]), vm.acc.clone());
-            pcnext(&mut vm.pc);
+        pcnext(&mut vm.pc);
     } else if command == "del" {
         vm.mem.remove(&vm.acc);
         pcnext(&mut vm.pc);
@@ -60,41 +59,68 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     // logic
     else if command == "add" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1])
-                            .expect("entry not found")
-                            .parse()
-                            .expect("not a number");
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "sub" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1])
-                            .expect("entry not found")
-                            .parse()
-                            .expect("not a number");
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "and" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1])
-                            .expect("entry not found")
-                            .parse()
-                            .expect("not a number");
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "or" {
         let n1: i32 = vm.acc.parse().unwrap();
-        let n2: i32 = vm.mem.get(instructionlist[1])
-                            .expect("entry not found")
-                            .parse()
-                            .expect("not a number");();
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
+        ();
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "not" {
+        let n1: i32 = vm.acc.parse().unwrap();
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
+        let n3: i32;
+        if n2 == n1 {
+            n3 = 0;
+        } else if n1 > n2 {
+            n3 = 1;
+        } else {
+            n3 = -1;
+        }
+        vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
+    } else if command == "compare" {
         let n1: i32 = vm.acc.parse().expect("not a number");
         let n2: i32 = !n1;
         vm.acc = n2.to_string();
@@ -124,15 +150,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     }
 }
 
-pub fn execmain(mut vm: Tsvm, debug: bool) -> Tsvm {
+pub fn execmain(mut vm: &mut Tsvm, debug: bool) {
     vm.isrunning = true;
     vm.pc = String::from(&vm.mem["start"]);
 
     while vm.isrunning {
         exec(&mut vm, debug);
     }
-
-    vm
 }
 
 #[cfg(test)]
@@ -153,9 +177,52 @@ mod tests {
     #[test]
     fn test_tsvminit() {
         let vm: Tsvm = tsvminit();
-        assert_eq!(vm.isrunning,  false);
-        assert_eq!(vm.acc, ""); 
-        assert_eq!(vm.pc, ""); 
+        assert_eq!(vm.isrunning, false);
+        assert_eq!(vm.acc, "");
+        assert_eq!(vm.pc, "");
         assert_eq!(vm.mem, HashMap::new())
+    }
+
+    // -- exec() tests
+    // memory
+    #[test]
+    fn test_load() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("m^0"), String::from("load^sas"));
+        exec(&mut vm, false);
+        assert_eq!("sas", vm.acc)
+    }
+
+    #[test]
+    fn test_get() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("var"), String::from("sas"));
+        vm.mem.insert(String::from("m^0"), String::from("get^var"));
+        exec(&mut vm, false);
+        assert_eq!("sas", vm.acc)
+    }
+
+    #[test]
+    fn test_set() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("sas");
+        vm.mem.insert(String::from("m^0"), String::from("set^var"));
+        exec(&mut vm, false);
+        assert_eq!("sas", vm.mem.get("var").unwrap())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_del() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("var");
+        vm.mem.insert(String::from("var"), String::from("sas"));
+        vm.mem.insert(String::from("m^0"), String::from("del"));
+        exec(&mut vm, false);
+        vm.mem.get("var").unwrap();
     }
 }
