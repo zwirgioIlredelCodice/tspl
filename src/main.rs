@@ -13,6 +13,6 @@ fn main() {
     //     .insert(String::from("main^1"), String::from("output"));
     // vm.mem.insert(String::from("main^2"), String::from("stop"));
     // tsplcore::execmain(vm);
-    basicassembly::assemblyfromfile("tspl_examples/es1.txt", &mut vm, true);
-    tsplcore::execmain(&mut vm, true);
+    basicassembly::assembler("tspl_examples/es1.txt", &mut vm);
+    tsplcore::execmain(&mut vm, false);
 }

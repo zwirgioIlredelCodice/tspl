@@ -16,7 +16,7 @@ pub fn tsvminit() -> Tsvm {
     }
 }
 
-fn pcnext(pc: &mut String) {
+pub fn pcnext(pc: &mut String) {
     let v: Vec<&str> = pc.splitn(2, '^').collect();
     let mut n: i32 = v[1].parse().unwrap();
     n += 1;
