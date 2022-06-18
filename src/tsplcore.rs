@@ -139,6 +139,8 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     } else if command == "jump0" {
         if vm.acc == "0" {
             vm.pc = String::from(instructionlist[1]);
+        } else {
+            pcnext(&mut vm.pc);
         }
     }
     // default
@@ -326,6 +328,34 @@ mod tests {
         vm.acc = String::from("2");
         exec(&mut vm, false);
         assert_eq!("0", vm.acc); // 2 == 2
+    }
+
+    // I/O ?
+
+    //jumps
+    #[test]
+    fn test_jump() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("fn^0");
+        vm.mem.insert(String::from("m^0"), String::from("jump"));
+        exec(&mut vm, false);
+        assert_eq!("fn^0", vm.pc)
+    }
+
+    #[test]
+    fn test_jump0() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("0");
+        vm.mem.insert(String::from("m^0"), String::from("jump0^fn^0"));
+        exec(&mut vm, false);
+        assert_eq!("fn^0", vm.pc);
+
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1");
+        exec(&mut vm, false);
+        assert_eq!("m^1", vm.pc)
     }
 
 }
