@@ -32,7 +32,9 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     if debug {
         println!("DB pc: {}", vm.pc);
     }
-    let instruction: String = vm.mem.get(&vm.pc).expect("not found entry for pc").clone();
+    let instruction: String = vm.mem.get(&vm.pc)
+        .expect(&format!("not found entry for pc = {}", vm.pc))
+        .clone();
 
     //parse instruction
     let instructionlist: Vec<&str> = instruction.splitn(2, '^').collect();
@@ -77,6 +79,28 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .parse()
             .expect("not a number");
         let n3: i32 = n1 - n2;
+        vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
+    } else if command == "mult" {
+        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
+        let n3: i32 = n1 * n2;
+        vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
+    } else if command == "div" {
+        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n2: i32 = vm
+            .mem
+            .get(instructionlist[1])
+            .expect("entry not found")
+            .parse()
+            .expect("not a number");
+        let n3: i32 = n1 / n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "and" {
@@ -248,6 +272,28 @@ mod tests {
         vm.mem.insert(String::from("m^0"), String::from("sub^var"));
         exec(&mut vm, false);
         assert_eq!("-1", vm.acc)
+    }
+
+    #[test]
+    fn test_mult() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("3");
+        vm.mem.insert(String::from("var"), String::from("2"));
+        vm.mem.insert(String::from("m^0"), String::from("mult^var"));
+        exec(&mut vm, false);
+        assert_eq!("6", vm.acc)
+    }
+
+    #[test]
+    fn test_div() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("12");
+        vm.mem.insert(String::from("var"), String::from("2"));
+        vm.mem.insert(String::from("m^0"), String::from("div^var"));
+        exec(&mut vm, false);
+        assert_eq!("6", vm.acc)
     }
 
     #[test]

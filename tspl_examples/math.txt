@@ -1,0 +1,7 @@
+start__m^0
+a__111
+b__666
+m^0__get^a
+...__add^b
+...__output
+...__stop

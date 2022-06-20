@@ -1,0 +1,10 @@
+start__m^-1
+m^-1__load^1
+m^0__jump0^m^5
+...__load^yes
+...__output
+...__load^m^7
+...__jump
+m^5__load^else
+...__output
+m^7__stop
