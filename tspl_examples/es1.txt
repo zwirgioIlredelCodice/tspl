@@ -1,12 +1,10 @@
 start__m^0
 i__1
 sum__0
-max__100
+max__5000
 m^0__get^sum
 ...__add^i
 ...__set^sum
-...__output
-...__load^ 
 ...__output
 ...__get^sum
 ...__compare^max
