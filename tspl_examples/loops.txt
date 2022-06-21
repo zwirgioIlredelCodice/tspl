@@ -1,0 +1,25 @@
+start__m^0
+// a for loop 9 to 1
+one__1
+counter__10
+m^0__load^10
+m^1__get^counter
+...__sub^one
+...__output
+...__set^counter
+...__compare^one
+...__jump0^m^100
+...__load^m^1
+...__jump
+m^100__load^;
+...__output
+// while input != 5
+five__5
+m^102__input
+...__compare^five
+...__jump0^m^200
+...__load^m^102
+...__jump
+m^200__load^ ==
+...__output
+...__stop

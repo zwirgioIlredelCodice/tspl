@@ -32,7 +32,9 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     if debug {
         println!("DB pc: {}", vm.pc);
     }
-    let instruction: String = vm.mem.get(&vm.pc)
+    let instruction: String = vm
+        .mem
+        .get(&vm.pc)
         .expect(&format!("not found entry for pc = {}", vm.pc))
         .clone();
 
@@ -60,84 +62,84 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     }
     // logic
     else if command == "add" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "sub" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "mult" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 * n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "div" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 / n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "and" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "or" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "not" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = !n1; // attenzione  ! = -(x + 1) -> !1 = -2 -> !0 = -1
         vm.acc = n2.to_string();
         pcnext(&mut vm.pc);
     } else if command == "compare" {
-        let n1: i32 = vm.acc.parse().expect("not a number");
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(instructionlist[1])
             .expect("entry not found")
             .parse()
-            .expect("not a number");
+            .expect(&format!("{} not a number", instructionlist[1]));
         let n3: i32;
         if n2 == n1 {
             n3 = 0;
@@ -146,14 +148,17 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         } else {
             n3 = -1;
         }
+        vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     }
     // I/O
     else if command == "input" {
+        vm.acc = "".to_string();
         std::io::stdin().read_line(&mut vm.acc).unwrap();
+        vm.acc = String::from(vm.acc.trim());
         pcnext(&mut vm.pc);
     } else if command == "output" {
-        print!("{}", vm.acc);
+        println!("{}", vm.acc);
         pcnext(&mut vm.pc);
     }
     // jumps
@@ -360,7 +365,8 @@ mod tests {
         vm.pc = String::from("m^0");
         vm.acc = String::from("1");
         vm.mem.insert(String::from("var"), String::from("2"));
-        vm.mem.insert(String::from("m^0"), String::from("compare^var"));
+        vm.mem
+            .insert(String::from("m^0"), String::from("compare^var"));
         exec(&mut vm, false);
         assert_eq!("-1", vm.acc); // 1 > 2
 
@@ -393,7 +399,8 @@ mod tests {
         let mut vm: Tsvm = tsvminit();
         vm.pc = String::from("m^0");
         vm.acc = String::from("0");
-        vm.mem.insert(String::from("m^0"), String::from("jump0^fn^0"));
+        vm.mem
+            .insert(String::from("m^0"), String::from("jump0^fn^0"));
         exec(&mut vm, false);
         assert_eq!("fn^0", vm.pc);
 
@@ -403,4 +410,13 @@ mod tests {
         assert_eq!("m^1", vm.pc)
     }
 
+    #[test]
+    fn test_input() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("m^0"), String::from("input"));
+        println!("type yes");
+        exec(&mut vm, false);
+        assert_eq!("yes", vm.acc)
+    }
 }

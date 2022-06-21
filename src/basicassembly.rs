@@ -3,6 +3,8 @@ use std::io::{BufRead, BufReader};
 
 use crate::tsplcore::{Tsvm, pcnext};
 
+
+/// load the "bytecode" into a hash table directly
 pub fn assemblyfromfile(filename: &str, vm: &mut Tsvm, debug: bool) {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
@@ -23,6 +25,8 @@ pub fn assemblyfromfile(filename: &str, vm: &mut Tsvm, debug: bool) {
     }
 }
 
+
+/// a prettier assebler with some helps
 pub fn assembler(filename: &str, vm: &mut Tsvm) {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
@@ -31,6 +35,10 @@ pub fn assembler(filename: &str, vm: &mut Tsvm) {
 
     for line in reader.lines() {
         let line: String = line.unwrap();
+
+        if line.starts_with("//") { // a comment do nothing
+            continue;
+        }
 
         let v: Vec<&str> = line.splitn(2, "__").collect();
         let key: String = String::from(v[0]);
