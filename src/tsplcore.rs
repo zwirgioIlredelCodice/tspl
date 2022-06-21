@@ -146,7 +146,6 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         } else {
             n3 = -1;
         }
-        vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     }
     // I/O
