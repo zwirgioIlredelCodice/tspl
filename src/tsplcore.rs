@@ -208,16 +208,16 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     // functions
     else if command == "call" {
         let mut namespace: String = rncommand(instructionlist[1]);
+        namespace.push('$');
         if vm.stack.contains(&namespace) { //if recursion
             namespace.push('*');
         }
         vm.stack.push(namespace.clone());
 
-        let mut returnpc: String = String::from("$");
-        returnpc.push_str(&namespace);
+        let mut returnpc: String = namespace;
         returnpc.push_str("_ret");
 
-        vm.mem.insert(returnpc, String::from(instructionlist[1]));
+        vm.mem.insert(returnpc, vm.pc.clone());
 
         vm.pc = String::from(instructionlist[1]);
     }
@@ -225,11 +225,11 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         
         let namespace: String = vm.stack.pop().unwrap();
 
-        let mut returnpc: String = String::from("$");
-        returnpc.push_str(&namespace);
+        let mut returnpc: String = namespace;
         returnpc.push_str("_ret");
 
-        vm.acc = String::from(vm.mem.get(&returnpc).unwrap());
+        vm.pc = String::from(vm.mem.get(&returnpc).unwrap());
+        vm.mem.remove(&returnpc);
     }
     else if command == "pass" {
         let mut namefrom: String = vm.stack[vm.stack.len() - 2].clone();
@@ -495,4 +495,53 @@ mod tests {
         exec(&mut vm, false);
         assert_eq!("yes", vm.acc)
     }
+
+    #[test]
+    fn test_call() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("m^0"), String::from("call^fn^0"));
+        vm.mem.insert(String::from("fn^0"), String::from("load^1"));
+        exec(&mut vm, false);
+        assert_eq!("fn$", vm.stack.last().unwrap());
+        assert_eq!("m^0", vm.mem.get("fn$_ret").unwrap());
+        assert_eq!("fn^0", vm.pc);
+    }
+
+    #[test]
+    fn test_uncall() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("m^0"), String::from("call^fn^0"));
+        vm.mem.insert(String::from("fn^0"), String::from("uncall"));
+        exec(&mut vm, false);
+        exec(&mut vm, false);
+        assert_eq!("", vm.stack.last().unwrap());
+        assert_eq!("m^0", vm.pc);
+    }
+
+    #[test]
+    fn test_pass() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("var"), String::from("ciao"));
+        vm.mem.insert(String::from("m^0"), String::from("call^fn^0"));
+        vm.mem.insert(String::from("fn^0"), String::from("pass^var"));
+        exec(&mut vm, false);
+        exec(&mut vm, false);
+        assert_eq!("ciao", vm.mem.get("fn$var").unwrap())
+    }
+
+    #[test]
+    fn test_return() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.mem.insert(String::from("fn$var"), String::from("bello"));
+        vm.mem.insert(String::from("m^0"), String::from("call^fn^0"));
+        vm.mem.insert(String::from("fn^0"), String::from("return^var"));
+        exec(&mut vm, false);
+        exec(&mut vm, false);
+        assert_eq!("bello", vm.mem.get("var").unwrap())
+    }
+
 }
