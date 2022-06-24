@@ -1,0 +1,25 @@
+start__main^0
+main^0__input
+...__set^n
+...__load^1
+...__call^fac^0
+...__output
+...__stop
+fac^0__pass^n
+...__mult^n
+...__set^res
+...__load^1
+...__compare^n
+...__jump0^fac^100
+// n = n -1
+...__load^1
+...__set^one
+...__get^n
+...__sub^one
+...__set^n
+//
+...__get^res
+...__call^fac^0
+...__uncall
+fac^100__get^res
+...__uncall

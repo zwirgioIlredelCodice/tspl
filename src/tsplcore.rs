@@ -106,13 +106,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", namefrom));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
+            .expect(&format!("{} not a number", namefrom));
         let n3: i32 = n1 * n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -209,7 +209,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     else if command == "call" {
         let mut namespace: String = rncommand(instructionlist[1]);
         namespace.push('$');
-        if vm.stack.contains(&namespace) { //if recursion
+        while vm.stack.contains(&namespace) { //if recursion
             namespace.push('*');
         }
         vm.stack.push(namespace.clone());
@@ -228,8 +228,10 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut returnpc: String = namespace;
         returnpc.push_str("_ret");
 
-        vm.pc = String::from(vm.mem.get(&returnpc).unwrap());
+        vm.pc = String::from(vm.mem.get(&returnpc).expect(&format!("{} not a return point", returnpc)));
         vm.mem.remove(&returnpc);
+
+        pcnext(&mut vm.pc);
     }
     else if command == "pass" {
         let mut namefrom: String = vm.stack[vm.stack.len() - 2].clone();
@@ -238,6 +240,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         nameto.push_str(instructionlist[1]);
 
         vm.mem.insert(nameto, String::from(vm.mem.get(&namefrom).unwrap()));
+        pcnext(&mut vm.pc);
     }
     else if command == "return" {
         let mut nameto: String = vm.stack[vm.stack.len() - 2].clone();
@@ -246,6 +249,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         namefrom.push_str(instructionlist[1]);
 
         vm.mem.insert(nameto, String::from(vm.mem.get(&namefrom).unwrap()));
+        pcnext(&mut vm.pc);
     }
     // default
     else if command == "stop" {
