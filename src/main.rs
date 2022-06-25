@@ -1,19 +1,54 @@
-use std::env;
+use clap::{Parser, Subcommand};
+use tsplcore::{Tsvm, tsvminit, execmain};
 
 mod basicassembly;
 mod tsplcore;
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let filename = &args[1];
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+#[clap(propagate_version = true)]
+struct Cli {
+    #[clap(subcommand)]
+    command: Commands,
+}
 
-    let mut vm: tsplcore::Tsvm = tsplcore::tsvminit();
-    basicassembly::assembler(filename, &mut vm);
-    if args.len() > 2 {
-        if args[2] == "--debug" {
-            tsplcore::execmain(&mut vm, true);
+#[derive(Subcommand)]
+enum Commands {
+    /// compile from tspl basicassembly and execute it
+    Run {
+        /// File to run
+        #[clap(long, value_parser)]
+        file: String,
+        
+        /// Show vm debug output
+        #[clap(short, long, action)]
+        debug: bool,
+    },
+
+    /// execute from a tspl bytecode
+    Exec {
+        /// File to execute
+        #[clap(long, value_parser)]
+        file: String,
+
+        /// Show vm debug output
+        #[clap(short, long, action)]
+        debug: bool,
+    },
+}
+fn main() {
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::Run {file, debug} => {
+            let mut vm: Tsvm = tsvminit();
+            basicassembly::assembler(file, &mut vm);
+            execmain(&mut vm, *debug);
+        },
+        Commands::Exec {file, debug} => {
+            let mut vm: Tsvm = tsvminit();
+            basicassembly::assemblyfromfile(file, &mut vm);
+            execmain(&mut vm, *debug);
         }
-    } else {
-        tsplcore::execmain(&mut vm, false);
     }
 }
