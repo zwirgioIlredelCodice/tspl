@@ -45,7 +45,7 @@ pub fn assembler(filename: &str, vm: &mut Tsvm) {
         let value: String = String::from(v[1]);
         
         if key == "..." {
-            if current_pc == "" {
+            if current_pc.is_empty() {
                 panic!("... is permitted if only after a defiend program counter es. main^0 _\n...");
             }
             else {

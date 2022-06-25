@@ -1,0 +1,28 @@
+start__m^0
+// n3 = 0, n2 = 5, n1 = 2
+m^0__load^0
+...__set^n3
+...__load^5
+...__set^n2
+...__load^2
+...__set^n1
+//
+// start calling procedure 1. set arg to pass 2. call function
+// 1.
+...__get^n2
+...__set^$arg2
+...__get^n1
+...__set^$arg1
+// 2.
+...__call^plus^0
+//
+...__get^$ret1
+...__output
+...__stop
+plus^0__pass^$arg1
+...__pass^$arg2
+...__get^$arg1
+...__add^$arg2
+...__set^$ret1
+...__return^$ret1
+...__uncall

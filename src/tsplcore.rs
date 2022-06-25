@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, cmp::Ordering};
 
 pub struct Tsvm {
     pub isrunning: bool,
@@ -42,7 +42,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     let instruction: String = vm
         .mem
         .get(&vm.pc)
-        .expect(&format!("not found entry for pc = {}", vm.pc))
+        .unwrap_or_else(|| panic!("not found entry for pc = {}", vm.pc))
         .clone();
 
     //parse instruction
@@ -78,13 +78,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -92,13 +92,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -106,13 +106,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", namefrom));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", namefrom));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", namefrom));
+            .unwrap_or_else(|_| panic!("{} not a number", namefrom));
         let n3: i32 = n1 * n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -120,13 +120,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 / n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -134,13 +134,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -148,18 +148,18 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "not" {
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = !n1; // attenzione  ! = -(x + 1) -> !1 = -2 -> !0 = -1
         vm.acc = n2.to_string();
         pcnext(&mut vm.pc);
@@ -167,21 +167,20 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().expect(&format!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .expect(&format!("{} not a number", instructionlist[1]));
-        let n3: i32;
-        if n2 == n1 {
-            n3 = 0;
-        } else if n1 > n2 {
-            n3 = 1;
-        } else {
-            n3 = -1;
-        }
+            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+        
+        // clippy?
+        let n3: i32 = match n1.cmp(&n2) {
+            Ordering::Equal => 0,
+            Ordering::Greater => 1,
+            Ordering::Less => -1,
+        };
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     }
@@ -228,7 +227,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut returnpc: String = namespace;
         returnpc.push_str("_ret");
 
-        vm.pc = String::from(vm.mem.get(&returnpc).expect(&format!("{} not a return point", returnpc)));
+        vm.pc = String::from(vm.mem.get(&returnpc).unwrap_or_else(|| panic!("{} not a return point", returnpc)));
         vm.mem.remove(&returnpc);
 
         pcnext(&mut vm.pc);
@@ -255,7 +254,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     else if command == "stop" {
         vm.isrunning = false;
     } else {
-        vm.isrunning = false;
+        panic!("{} is not a command", command);
     }
 }
 
