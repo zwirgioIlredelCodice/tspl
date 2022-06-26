@@ -35,6 +35,15 @@ pub fn rncommand(command: &str) -> String {
     String::from(v[0])
 }
 
+fn crashreport(vm: &Tsvm) {
+    println!("################");
+    println!("CRASH REPORT");
+    println!("call stack = {:?}", vm.stack);
+    println!("pc = {}, acc = {}", vm.pc, vm.acc);
+    println!("memory = {:?}", vm.mem);
+    println!("################");
+}
+
 fn exec(vm: &mut Tsvm, debug: bool) {
     if debug {
         println!("DB pc: {}", vm.pc);
@@ -42,7 +51,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     let instruction: String = vm
         .mem
         .get(&vm.pc)
-        .unwrap_or_else(|| panic!("not found entry for pc = {}", vm.pc))
+        .unwrap_or_else(|| {crashreport(vm); panic!("not found entry for pc = {}", vm.pc)})
         .clone();
 
     //parse instruction
@@ -78,13 +87,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -92,13 +101,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -106,13 +115,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", namefrom));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", namefrom));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 * n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -120,13 +129,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 / n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -134,13 +143,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -148,18 +157,18 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "not" {
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = !n1; // attenzione  ! = -(x + 1) -> !1 = -2 -> !0 = -1
         vm.acc = n2.to_string();
         pcnext(&mut vm.pc);
@@ -167,13 +176,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut namefrom: String = vm.stack.last().unwrap().clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| panic!("{} not a number", vm.acc));
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| panic!("{} not a number", instructionlist[1]));
+            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
         
         // clippy?
         let n3: i32 = match n1.cmp(&n2) {
@@ -227,7 +236,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         let mut returnpc: String = namespace;
         returnpc.push_str("_ret");
 
-        vm.pc = String::from(vm.mem.get(&returnpc).unwrap_or_else(|| panic!("{} not a return point", returnpc)));
+        vm.pc = String::from(vm.mem.get(&returnpc).unwrap_or_else(|| {crashreport(&vm); panic!("{} not a return point", returnpc)}));
         vm.mem.remove(&returnpc);
 
         pcnext(&mut vm.pc);
