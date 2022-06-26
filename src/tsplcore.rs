@@ -20,7 +20,7 @@ pub fn tsvminit() -> Tsvm {
 
 pub fn pcnext(pc: &mut String) {
     let v: Vec<&str> = pc.splitn(2, '^').collect();
-    let mut n: i32 = v[1].parse().unwrap();
+    let mut n: i32 = v[1].parse().unwrap_or_else(|_| {panic!("pc = {} is not in a right format", pc)});
     n += 1;
     let name: String = String::from(v[0]);
     let num: String = n.to_string();
@@ -66,13 +66,13 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         vm.acc = String::from(instructionlist[1]);
         pcnext(&mut vm.pc);
     } else if command == "get" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
 
         vm.acc = String::from(&vm.mem[&namefrom]);
         pcnext(&mut vm.pc);
     } else if command == "set" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
         vm.mem
@@ -84,105 +84,105 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     }
     // logic
     else if command == "add" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "sub" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "mult" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 * n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "div" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 / n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "and" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "or" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
     } else if command == "not" {
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = !n1; // attenzione  ! = -(x + 1) -> !1 = -2 -> !0 = -1
         vm.acc = n2.to_string();
         pcnext(&mut vm.pc);
     } else if command == "compare" {
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
         
-        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(&vm); panic!("{} not a number", vm.acc)});
+        let n1: i32 = vm.acc.parse().unwrap_or_else(|_| {crashreport(vm); panic!("{} not a number", vm.acc)});
         let n2: i32 = vm
             .mem
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(&vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
         
         // clippy?
         let n3: i32 = match n1.cmp(&n2) {
@@ -231,32 +231,32 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     }
     else if command == "uncall" {
         
-        let namespace: String = vm.stack.pop().unwrap();
+        let namespace: String = vm.stack.pop().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")});
 
         let mut returnpc: String = namespace;
         returnpc.push_str("_ret");
 
-        vm.pc = String::from(vm.mem.get(&returnpc).unwrap_or_else(|| {crashreport(&vm); panic!("{} not a return point", returnpc)}));
+        vm.pc = String::from(vm.mem.get(&returnpc).unwrap_or_else(|| {crashreport(vm); panic!("{} not a return point", returnpc)}));
         vm.mem.remove(&returnpc);
 
         pcnext(&mut vm.pc);
     }
     else if command == "pass" {
-        let mut namefrom: String = vm.stack[vm.stack.len() - 2].clone();
+        let mut namefrom: String = vm.stack.get(vm.stack.len() - 2).unwrap_or_else(|| {crashreport(vm); panic!("call stack has len < 2")}).clone();
         namefrom.push_str(instructionlist[1]);
-        let mut nameto: String = vm.stack.last().unwrap().clone();
+        let mut nameto: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         nameto.push_str(instructionlist[1]);
 
-        vm.mem.insert(nameto, String::from(vm.mem.get(&namefrom).unwrap()));
+        vm.mem.insert(nameto, String::from(vm.mem.get(&namefrom).unwrap_or_else(|| {crashreport(vm); panic!("not found entry for pc = {}", namefrom)})));
         pcnext(&mut vm.pc);
     }
     else if command == "return" {
-        let mut nameto: String = vm.stack[vm.stack.len() - 2].clone();
+        let mut nameto: String = vm.stack.get(vm.stack.len() - 2).unwrap_or_else(|| {crashreport(vm); panic!("call stack has len < 2")}).clone();
         nameto.push_str(instructionlist[1]);
-        let mut namefrom: String = vm.stack.last().unwrap().clone();
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
 
-        vm.mem.insert(nameto, String::from(vm.mem.get(&namefrom).unwrap()));
+        vm.mem.insert(nameto, String::from(vm.mem.get(&namefrom).unwrap_or_else(|| {crashreport(vm); panic!("not found entry for pc = {}", namefrom)})));
         pcnext(&mut vm.pc);
     }
     // default
@@ -294,7 +294,7 @@ mod tests {
     #[test]
     fn test_tsvminit() {
         let vm: Tsvm = tsvminit();
-        assert_eq!(vm.isrunning, false);
+        assert!(vm.isrunning);
         assert_eq!(vm.acc, "");
         assert_eq!(vm.pc, "");
         assert_eq!(vm.mem, HashMap::new())
