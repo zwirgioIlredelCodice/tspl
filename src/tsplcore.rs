@@ -294,7 +294,7 @@ mod tests {
     #[test]
     fn test_tsvminit() {
         let vm: Tsvm = tsvminit();
-        assert!(vm.isrunning);
+        assert!(!vm.isrunning);
         assert_eq!(vm.acc, "");
         assert_eq!(vm.pc, "");
         assert_eq!(vm.mem, HashMap::new())
@@ -529,7 +529,7 @@ mod tests {
         exec(&mut vm, false);
         exec(&mut vm, false);
         assert_eq!("", vm.stack.last().unwrap());
-        assert_eq!("m^0", vm.pc);
+        assert_eq!("m^1", vm.pc);
     }
 
     #[test]
