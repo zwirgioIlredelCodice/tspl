@@ -200,7 +200,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         vm.acc = String::from(vm.acc.trim());
         pcnext(&mut vm.pc);
     } else if command == "output" {
-        println!("{}", vm.acc);
+        print!("{}", vm.acc);
         pcnext(&mut vm.pc);
     }
     // jumps

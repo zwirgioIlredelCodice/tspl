@@ -1,4 +1,4 @@
-start__m^0
-m^0__load^hello world!
-m^1__output
-m^2__stop
+start m^0
+m^0 "load^hello world!\n"
+m^1 output
+m^2 stop

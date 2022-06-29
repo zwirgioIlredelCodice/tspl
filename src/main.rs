@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 use tsplcore::{Tsvm, tsvminit, execmain};
+use std::fs;
 
 mod basicassembly;
 mod tsplcore;
+mod bytecode;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -47,7 +49,10 @@ fn main() {
         },
         Commands::Exec {file, debug} => {
             let mut vm: Tsvm = tsvminit();
-            basicassembly::assemblyfromfile(file, &mut vm);
+        
+            let contents = fs::read_to_string(file)
+                .expect("Something went wrong reading the file");
+            vm.mem = bytecode::program_parser(&contents).unwrap().1;
             execmain(&mut vm, *debug);
         }
     }
