@@ -1,4 +1,4 @@
 start m^0
-m^0 "load^hello world!\n"
+m^0 "load^h\\llo world!\n"
 m^1 output
 m^2 stop

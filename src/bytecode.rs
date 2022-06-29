@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
     bytes::complete::{is_not, is_a},
-    bytes::complete::{escaped_transform, tag},
-    character::{complete::char},
-    combinator::{eof, recognize, value},
+    bytes::complete::{escaped, tag},
+    character::{complete::char, complete::one_of},
+    combinator::{eof, recognize},
     multi::{fold_many0, many1},
     sequence::{delimited, separated_pair, terminated},
     IResult,
@@ -18,16 +18,10 @@ fn word_parser(i: &str) -> IResult<&str, &str> {
 fn string_parser(i: &str) -> IResult<&str, &str> {
     delimited(
         char('"'),
-        recognize(escaped_transform(
+        recognize(escaped(
             recognize(many1(is_not("\"\\"))),
             '\\',
-            alt((
-                value("\\", tag("\\")),
-                value("\"", tag("\"")),
-                value("\n", tag("n")),
-                value("\t", tag("t")),
-                value("\r", tag("r")),
-            )),
+            one_of(r#""abtnvfr\"#)
         )),
         char('"'),
     )(i)

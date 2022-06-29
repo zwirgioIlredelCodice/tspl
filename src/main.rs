@@ -52,6 +52,7 @@ fn main() {
         
             let contents = fs::read_to_string(file)
                 .expect("Something went wrong reading the file");
+            println!("{}", contents);
             vm.mem = bytecode::program_parser(&contents).unwrap().1;
             execmain(&mut vm, *debug);
         }
