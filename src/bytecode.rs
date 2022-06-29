@@ -1,9 +1,8 @@
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, is_a},
-    bytes::complete::{escaped, tag},
-    character::{complete::char, complete::one_of},
-    combinator::{eof, recognize},
+    bytes::complete::{escaped_transform, tag, is_not, is_a},
+    character::{complete::char, streaming::alpha1},
+    combinator::{eof, recognize, value},
     multi::{fold_many0, many1},
     sequence::{delimited, separated_pair, terminated},
     IResult,
@@ -12,17 +11,41 @@ use nom::{
 use std::collections::HashMap;
 
 fn word_parser(i: &str) -> IResult<&str, &str> {
-    recognize(many1(is_not("\" \n\t\r")))(i)
+    recognize(many1(is_not("\" \t\n\r")))(i)
 }
 
 fn string_parser(i: &str) -> IResult<&str, &str> {
     delimited(
         char('"'),
-        recognize(escaped(
+        recognize(escaped_transform(
             recognize(many1(is_not("\"\\"))),
             '\\',
-            one_of(r#""abtnvfr\"#)
+            alt((
+                value('\\', tag("\\")),
+                value('\"', tag("\"")),
+                value('\n', tag("n")),
+                value('\t', tag("t")),
+                value('\r', tag("r")),
+            )),
         )),
+        char('"'),
+    )(i)
+}
+
+fn string1_parser(i: &str) -> IResult<&str, String> {
+    delimited(
+        char('"'),
+        escaped_transform(
+            alpha1,
+            '\\',
+            alt((
+                value('\\', tag("\\")),
+                value('\"', tag("\"")),
+                value('\n', tag("n")),
+                value('\t', tag("t")),
+                value('\r', tag("r")),
+            )),
+        ),
         char('"'),
     )(i)
 }
@@ -49,4 +72,14 @@ pub fn program_parser(i: &str) -> IResult<&str, HashMap<String, String>> {
         }),
         eof,
     )(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_string() {
+        // https://docs.rs/nom/latest/nom/bytes/complete/fn.escaped_transform.html
+        assert_eq!(string1_parser("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
+    }
 }
