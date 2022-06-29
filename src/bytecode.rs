@@ -1,8 +1,8 @@
 use nom::{
     branch::alt,
-    bytes::complete::{escaped_transform, tag, is_not, is_a},
-    character::{complete::char},
-    combinator::{eof, recognize, value, map},
+    bytes::complete::{escaped_transform, is_a, is_not, tag},
+    character::complete::char,
+    combinator::{eof, map, recognize, value},
     multi::{fold_many0, many1},
     sequence::{delimited, separated_pair, terminated},
     IResult,
@@ -11,10 +11,9 @@ use nom::{
 use std::collections::HashMap;
 
 fn word_parser(i: &str) -> IResult<&str, String> {
-    map(
-        recognize(many1(is_not("\" \t\n\r"))),
-        |s: &str| s.to_string()
-    )(i)
+    map(recognize(many1(is_not("\" \t\n\r"))), |s: &str| {
+        s.to_string()
+    })(i)
 }
 
 fn string_parser(i: &str) -> IResult<&str, String> {
@@ -46,15 +45,18 @@ fn line_parser(i: &str) -> IResult<&str, (String, String)> {
     )(i)
 }
 
-
 /// parse program in a HashMap<String, String>> ready to be used in tspl vm0
 /// must contain a newline at hte end
 pub fn program_parser(i: &str) -> IResult<&str, HashMap<String, String>> {
     terminated(
-        fold_many0(line_parser, HashMap::new, |mut table: HashMap<String, String>, item| {
-            table.insert(item.0, item.1);
-            table
-        }),
+        fold_many0(
+            line_parser,
+            HashMap::new,
+            |mut table: HashMap<String, String>, item| {
+                table.insert(item.0, item.1);
+                table
+            },
+        ),
         eof,
     )(i)
 }
