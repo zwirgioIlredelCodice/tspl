@@ -4,7 +4,9 @@ main^1 set^n
 main^2 load^1
 main^3 call^fac^0
 main^4 output
-main^5 stop
+main^5 "load^\n"
+main^6 output
+main^7 stop
 fac^0 pass^n
 fac^1 mult^n
 fac^2 set^res
