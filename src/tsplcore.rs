@@ -6,6 +6,7 @@ pub struct Tsvm {
     pub pc: String,
     pub mem: HashMap<String, String>,
     pub stack: Vec<String>,
+    pub iter: Vec<String>
 }
 
 pub fn tsvminit() -> Tsvm {
@@ -15,6 +16,7 @@ pub fn tsvminit() -> Tsvm {
         pc: String::from(""),
         mem: HashMap::new(),
         stack: vec![String::from("")],
+        iter: Vec::new(),
     }
 }
 
@@ -83,6 +85,17 @@ fn exec(vm: &mut Tsvm, debug: bool) {
         pcnext(&mut vm.pc);
     }
     // logic
+    else if command == "append" {
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
+        namefrom.push_str(instructionlist[1]);
+
+        vm.acc.push_str(vm.mem.get(&namefrom).expect("entry not found"));
+        pcnext(&mut vm.pc);
+    }
+    else if command == "getnext" {
+        vm.acc = vm.iter.remove(0);
+        pcnext(&mut vm.pc);
+    }
     else if command == "add" {
         let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
         namefrom.push_str(instructionlist[1]);
@@ -93,7 +106,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         let n3: i32 = n1 + n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -107,7 +120,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         let n3: i32 = n1 - n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -121,7 +134,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         let n3: i32 = n1 * n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -135,7 +148,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         let n3: i32 = n1 / n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -149,7 +162,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         let n3: i32 = n1 & n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -163,7 +176,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         let n3: i32 = n1 | n2;
         vm.acc = n3.to_string();
         pcnext(&mut vm.pc);
@@ -182,7 +195,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             .get(&namefrom)
             .expect("entry not found")
             .parse()
-            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", instructionlist[1])});
+            .unwrap_or_else(|_| {crashreport(vm);panic!("{} not a number", namefrom)});
         
         // clippy?
         let n3: i32 = match n1.cmp(&n2) {
@@ -191,6 +204,22 @@ fn exec(vm: &mut Tsvm, debug: bool) {
             Ordering::Less => -1,
         };
         vm.acc = n3.to_string();
+        pcnext(&mut vm.pc);
+    }
+    else if command == "split" {
+        let mut namefrom: String = vm.stack.last().unwrap_or_else(|| {crashreport(vm); panic!("call stack has len zero")}).clone();
+        namefrom.push_str(instructionlist[1]);
+        vm.iter.clear();
+        for token in vm.acc.split(vm.mem.get(&namefrom).expect("entry not found")) {
+            vm.iter.push(token.to_string());
+        }
+        pcnext(&mut vm.pc);
+    }
+    else if command == "splitall" {
+        vm.iter.clear();
+        for token in vm.acc.chars() {
+            vm.iter.push(token.to_string());
+        }
         pcnext(&mut vm.pc);
     }
     // I/O
@@ -263,6 +292,7 @@ fn exec(vm: &mut Tsvm, debug: bool) {
     else if command == "stop" {
         vm.isrunning = false;
     } else {
+        crashreport(vm);
         panic!("{} is not a command", command);
     }
 }
@@ -344,6 +374,51 @@ mod tests {
     }
 
     // logic
+    #[test]
+    fn test_append() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("ciao ");
+        vm.mem.insert(String::from("var"), String::from("belli"));
+        vm.mem.insert(String::from("m^0"), String::from("append^var"));
+        exec(&mut vm, false);
+        assert_eq!("ciao belli", vm.acc)
+    }
+
+    #[test]
+    fn test_split() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("1^23^456");
+        vm.mem.insert(String::from("var"), String::from("^"));
+        vm.mem.insert(String::from("m^0"), String::from("split^var"));
+        exec(&mut vm, false);
+        assert_eq!(vec!["1", "23", "456"], vm.iter)
+    }
+
+    #[test]
+    fn test_splitall() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.acc = String::from("abc");
+        vm.mem.insert(String::from("m^0"), String::from("splitall"));
+        exec(&mut vm, false);
+        assert_eq!(vec!["a", "b", "c"], vm.iter)
+    }
+
+    #[test]
+    fn test_getnext() {
+        let mut vm: Tsvm = tsvminit();
+        vm.pc = String::from("m^0");
+        vm.iter = vec!["aa".to_string(), "bb".to_string(), "cc".to_string()];
+        vm.mem.insert(String::from("m^0"), String::from("getnext"));
+        vm.mem.insert(String::from("m^1"), String::from("getnext"));
+        exec(&mut vm, false);
+        assert_eq!("aa", vm.acc);
+        exec(&mut vm, false);
+        assert_eq!("bb", vm.acc)
+    }
+
     #[test]
     fn test_add() {
         let mut vm: Tsvm = tsvminit();
